@@ -6,8 +6,8 @@ A full-stack MERN capstone project for browsing movies, selecting seats on a liv
 
 ## Live Demo
 
-- **Frontend URL**: `TBD` (e.g. `https://movietime-frontend.vercel.app`)
-- **Backend URL**: `TBD` (e.g. `https://movietime-backend.onrender.com`)
+- **Frontend URL**: https://movietime-cinema-ticket-booking.vercel.app
+- **Backend URL**: https://movietime-backend-kpa0.onrender.com
 
 ### Test Credentials (Seeded Accounts)
 | Role | Email | Password | Access / Capabilities |
