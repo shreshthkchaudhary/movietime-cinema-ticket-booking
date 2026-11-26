@@ -4,6 +4,21 @@ A full-stack MERN capstone project for browsing movies, selecting seats on a liv
 
 ---
 
+## Live Demo
+
+- **Frontend URL**: `TBD` (e.g. `https://movietime-frontend.vercel.app`)
+- **Backend URL**: `TBD` (e.g. `https://movietime-backend.onrender.com`)
+
+### Test Credentials (Seeded Accounts)
+| Role | Email | Password | Access / Capabilities |
+| --- | --- | --- | --- |
+| **Super Admin** | `admin@movietime.com` | `admin123` | Full system access: add/edit/delete movies & theatres, view global reports |
+| **Theatre Admin 1** | `theatre@movietime.com` | `theatre123` | Manages "PVR Grand Mall": add/update/delete shows, view theatre revenue |
+| **Theatre Admin 2** | `theatre2@movietime.com` | `theatre123` | Manages "INOX Metro Plaza": add/update/delete shows, view theatre revenue |
+| **Customer / User** | `user@movietime.com` | `user123` | Browse movies, live seat selection/locking, book tickets, view/cancel bookings |
+
+---
+
 ## Features by Role
 
 - **User (`user`)**:
@@ -280,14 +295,45 @@ erDiagram
 
 ## Deployment Guide
 
-1. **Database (MongoDB Atlas)**:
-   - Create a free M0 cluster on MongoDB Atlas, create a database user, allow network access (`0.0.0.0/0`), and copy the connection string for `MONGO_URI`.
-2. **Backend (Render)**:
-   - Create a **Web Service** pointing to the `backend` root directory.
-   - Build command: `npm install` | Start command: `npm start`.
-   - Set environment variables: `MONGO_URI`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `JWT_ACCESS_EXPIRES_IN=15m`, `JWT_REFRESH_EXPIRES_IN=7d`, and `CLIENT_ORIGIN=https://your-frontend.vercel.app`.
-   - **Important note**: Render's free plan sleeps after inactivity, and because Socket.IO seat locks are stored in memory (`seatLocks` Map), any active temporary locks reset if the server restarts or sleeps (confirmed bookings remain safe in MongoDB).
-3. **Frontend (Vercel or Netlify)**:
-   - Create a project pointing to the `frontend` root directory.
-   - Build command: `npm run build` | Output directory: `dist`.
-   - Set environment variable: `VITE_API_URL=https://your-backend.onrender.com`.
+### 1. Database (MongoDB Atlas)
+- Create a free **M0 cluster** on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas).
+- In **Network Access**, add `0.0.0.0/0` (allow access from anywhere, since Render's outbound IP addresses are dynamic).
+- In **Database Access**, create a database user and password.
+- Copy your connection string: `mongodb+srv://<username>:<password>@cluster0.mongodb.net/movietime?retryWrites=true&w=majority`.
+- Seed the database once from your local terminal pointing to Atlas:
+  ```powershell
+  cd backend
+  node -r dotenv/config scripts/seed.js dotenv_config_path=.env
+  ```
+  *(or pass `MONGO_URI="mongodb+srv://..." node scripts/seed.js`)*
+
+### 2. Backend (Render)
+- Create a new **Web Service** on [Render](https://render.com/) linked to your GitHub repository.
+- Configure service settings:
+  - **Root Directory**: `backend`
+  - **Environment**: `Node`
+  - **Build Command**: `npm install`
+  - **Start Command**: `npm start`
+  - **Health Check Path**: `/api/health`
+- Set Environment Variables:
+  - `MONGO_URI`: your MongoDB Atlas connection string
+  - `PORT`: `5000` (or leave default, Render sets this automatically)
+  - `JWT_ACCESS_SECRET`: strong 64-character hex secret
+  - `JWT_REFRESH_SECRET`: strong 64-character hex secret
+  - `JWT_ACCESS_EXPIRES_IN`: `15m`
+  - `JWT_REFRESH_EXPIRES_IN`: `7d`
+  - `CLIENT_ORIGIN`: `https://your-frontend.vercel.app` (your Vercel frontend URL, **no trailing slash**)
+- **Render Free Tier Notes**:
+  - The free tier spins down (sleeps) after 15 minutes of inactivity. The first incoming request takes ~50 seconds for cold start.
+  - When Render sleeps or restarts, in-memory Socket.IO seat locks are reset (confirmed bookings and user sessions in MongoDB are completely safe and persistent).
+
+### 3. Frontend (Vercel)
+- Create a new project on [Vercel](https://vercel.com/) linked to your GitHub repository.
+- Configure project settings:
+  - **Root Directory**: `frontend`
+  - **Framework Preset**: `Vite`
+  - **Build Command**: `npm run build`
+  - **Output Directory**: `dist`
+- Set Environment Variable:
+  - `VITE_API_URL`: `https://your-backend.onrender.com` (your Render backend URL, **with NO trailing slash**)
+- Single-page application routing rewrites are configured in `frontend/vercel.json` so direct URL visits and page reloads work seamlessly without 404s.
