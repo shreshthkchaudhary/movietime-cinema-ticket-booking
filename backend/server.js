@@ -14,7 +14,8 @@ const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
 const server = http.createServer(app);
-const clientOrigin = process.env.CLIENT_ORIGIN;
+const rawClientOrigin = process.env.CLIENT_ORIGIN;
+const clientOrigin = rawClientOrigin ? rawClientOrigin.replace(/\/+$/, '') : null;
 
 const io = new Server(
   server,
