@@ -1,7 +1,8 @@
 import { io } from 'socket.io-client';
 import { refreshAccessToken } from './api';
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || undefined;
+const rawSocketUrl = import.meta.env.VITE_API_URL;
+const SOCKET_URL = rawSocketUrl ? rawSocketUrl.replace(/\/+$/, '') : undefined;
 
 // Create a Socket.IO client authenticated with the stored JWT access token
 export function createSeatSocket() {
